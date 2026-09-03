@@ -5,6 +5,9 @@
 *.pem
 !dist/.env
 
+# Scratch / one-off test scripts (may contain hardcoded keys — keep out)
+_test_*.py
+
 # Cookies / sessions
 .linkedin_cookies/
 .linkedin_cookies*
