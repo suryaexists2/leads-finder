@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="font-size:22px;margin-bottom:20px">Leads</h1>
+
+<div class="grid4" style="margin-bottom:16px">
+  <div class="stat"><div class="n">{{ stats.with_email }}</div><div class="l">With Email</div></div>
+  <div class="stat"><div class="n">{{ stats.no_email_count }}</div><div class="l">No Email</div></div>
+  <div class="stat"><div class="n">{{ stats.history_count }}</div><div class="l">All-Time Seen</div></div>
+  <div class="stat"><div class="n">{{ leads|length }}</div><div class="l">Showing</div></div>
+</div>
+
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+  <a href="/leads?tab=email" class="btn {% if tab == 'email' %}btn-p{% else %}btn-s{% endif %}">Email Leads ({{ stats.with_email }})</a>
+  <a href="/leads?tab=no_email" class="btn {% if tab == 'no_email' %}btn-p{% else %}btn-s{% endif %}">No Email ({{ stats.no_email_count }})</a>
+  <a href="/leads/export?tab={{ tab }}" class="btn btn-g" download>Export CSV</a>
+</div>
+
+<div class="card" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding:16px 20px">
+  <div class="form-g" style="margin:0;flex:1;min-width:180px">
+    <label>Filter by keyword</label>
+    <select onchange="location.href='/leads?tab={{ tab }}&keyword='+this.value">
+      <option value="">All Keywords</option>
+      {% for kw in keywords %}
+      <option value="{{ kw }}" {% if kw == kw_filter %}selected{% endif %}>{{ kw }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+{% if leads %}
+<div class="card" style="padding:12px;overflow-x:auto">
+  <table>
+    <tr>
+      <th style="width:30px">#</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Location</th>
+      <th>Post</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>WA</th>
+      <th>Actions</th>
+    </tr>
+    {% for lead in leads %}
+    <tr>
+      <td style="color:#999">{{ loop.index }}</td>
+      <td><a href="{{ lead.profile_url }}" target="_blank" style="color:#0a66c2;text-decoration:none;font-weight:500">{{ lead.name[:26] }}</a></td>
+      <td style="font-size:11px;color:#2e9e5b">{{ (lead.lead_type or '').replace('_',' ').title()[:18] }}</td>
+      <td style="font-size:11px;color:#888">{{ (lead.location or '')[:22] }}</td>
+      <td style="max-width:200px;font-size:12px;color:#666">{{ lead.post_text[:60] if lead.post_text else '-' }}</td>
+      <td>
+        {% if lead.email %}
+          <span style="font-size:12px">{{ lead.email }}</span>
+        {% elif tab == 'no_email' %}
+          <form method="POST" action="/leads/add-email" style="display:flex;gap:4px">
+            <input type="hidden" name="profile_url" value="{{ lead.profile_url }}">
+            <input type="hidden" name="tab" value="{{ tab }}">
+            <input type="email" name="email" placeholder="email@" style="width:130px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px">
+            <button type="submit" class="btn btn-s" style="padding:4px 10px;font-size:11px">Add</button>
+          </form>
+        {% endif %}
+      </td>
+      <td style="font-size:12px;color:#666">{{ lead.phone or '-' }}</td>
+      <td style="font-size:12px">{% if lead.whatsapp and lead.whatsapp in ('yes','1') %}💬{% else %}-{% endif %}</td>
+      <td>
+        <form method="POST" action="/leads/delete" onsubmit="return confirm('Delete this lead?')">
+          <input type="hidden" name="profile_url" value="{{ lead.profile_url }}">
+          <button type="submit" class="btn btn-d" style="padding:4px 10px;font-size:11px">&#x1F5D1;</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="card empty">
+  <p style="font-size:16px;margin-bottom:12px">No {% if tab == 'email' %}email leads{% else %}no-email leads{% endif %} yet</p>
+  <a href="/scrape" class="btn btn-p">Start Scraping</a>
+</div>
+{% endif %}
+{% endblock %}

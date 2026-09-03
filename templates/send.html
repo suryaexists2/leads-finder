@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="font-size:22px;margin-bottom:20px">Send Cold Email</h1>
+
+<div class="grid4" style="margin-bottom:16px">
+  <div class="stat"><div class="n">{{ total_with_email }}</div><div class="l">With Email</div></div>
+  <div class="stat"><div class="n">{{ unsent_count }}</div><div class="l">Unsent</div></div>
+</div>
+
+{% if unsent_count == 0 %}
+<div class="card empty">
+  <p>No unsent leads with email. <a href="/leads">Add emails</a> or <a href="/scrape">scrape more leads</a>.</p>
+</div>
+{% else %}
+<div class="card">
+  <h2>Compose Email</h2>
+  <form method="POST" action="/send">
+    <div class="form-g">
+      <label>Subject</label>
+      <input type="text" name="subject" placeholder="Need a website? Let's talk." required>
+    </div>
+    <div class="form-g">
+      <label>Body <span style="font-weight:400;color:#999">(use {{name}}, {{country}} for personalization)</span></label>
+      <textarea name="body" rows="10" required placeholder="Hi {{name}},
+
+I saw your post about needing a web developer. I build professional websites and web apps.
+
+If you're interested, let's chat. I'd love to help bring your project to life.
+
+Best,
+Surya"></textarea>
+    </div>
+    <div style="display:flex;gap:16px;align-items:end;flex-wrap:wrap">
+      <div class="form-g" style="margin:0;max-width:180px">
+        <label>Delay (seconds)</label>
+        <input type="number" name="delay" value="5" min="3" max="60">
+      </div>
+      <div class="form-g" style="margin:0">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" name="dry_run" checked style="width:auto">
+          Dry Run (preview, no emails sent)
+        </label>
+      </div>
+      <button type="submit" class="btn btn-p">&#x2709;&#xFE0F; Send to {{ unsent_count }} Leads</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

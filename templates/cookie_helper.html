@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Extractor - LinkedIn Leads</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f23; color: #e0e0e0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #00d4ff; margin-bottom: 8px; font-size: 24px; }
+        .subtitle { color: #888; margin-bottom: 24px; }
+        .card { background: #16213e; border-radius: 10px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #00d4ff; }
+        .card h3 { color: #00d4ff; margin-bottom: 10px; font-size: 16px; }
+        .card p { color: #ccc; line-height: 1.6; margin-bottom: 8px; }
+        .step-num { display: inline-block; width: 28px; height: 28px; background: #00d4ff; color: #0f0f23; border-radius: 50%; text-align: center; line-height: 28px; font-weight: bold; margin-right: 8px; }
+        code { background: #0a0a23; padding: 2px 8px; border-radius: 4px; color: #00ff88; font-size: 13px; }
+        pre { background: #0a0a23; padding: 12px; border-radius: 6px; overflow-x: auto; color: #00ff88; font-size: 13px; margin: 8px 0; border: 1px solid #333; }
+        textarea { width: 100%; height: 180px; background: #0a0a23; color: #00ff88; border: 1px solid #333; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 13px; resize: vertical; }
+        textarea:focus { outline: none; border-color: #00d4ff; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; margin: 6px 4px 6px 0; }
+        .btn-primary { background: #00d4ff; color: #0f0f23; }
+        .btn-primary:hover { background: #00b8d9; }
+        .btn-success { background: #00ff88; color: #0f0f23; }
+        .btn-success:hover { background: #00cc6a; }
+        .btn-copy { background: #6c5ce7; color: white; }
+        .btn-copy:hover { background: #5a4bd1; }
+        #result { margin-top: 12px; padding: 12px; border-radius: 6px; display: none; }
+        #result.ok { display: block; background: #0a3d0a; border: 1px solid #00ff88; color: #00ff88; }
+        #result.fail { display: block; background: #3d0a0a; border: 1px solid #ff4444; color: #ff4444; }
+        .highlight { background: #1a3a5c; padding: 10px; border-radius: 6px; margin: 8px 0; }
+        .warning { color: #ffaa00; font-size: 13px; }
+        .method-tabs { display: flex; gap: 0; margin-bottom: 16px; }
+        .method-tab { padding: 10px 16px; background: #1a1a3e; cursor: pointer; border: 1px solid #333; color: #888; }
+        .method-tab:first-child { border-radius: 6px 0 0 6px; }
+        .method-tab:last-child { border-radius: 0 6px 6px 0; }
+        .method-tab.active { background: #00d4ff; color: #0f0f23; font-weight: bold; border-color: #00d4ff; }
+        .method-content { display: none; }
+        .method-content.active { display: block; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>LinkedIn Cookie Extractor</h1>
+    <p class="subtitle">2 methods - choose the easiest one for you</p>
+
+    <div class="method-tabs">
+        <div class="method-tab active" onclick="showMethod('fast')">Method 1: Fast (15 sec)</div>
+        <div class="method-tab" onclick="showMethod('safe')">Method 2: Safe (DevTools)</div>
+    </div>
+
+    <!-- METHOD 1: Fast - Bookmarklet approach -->
+    <div id="method-fast" class="method-content active">
+        <div class="card">
+            <h3><span class="step-num">1</span>LinkedIn open karo Edge me (already logged in)</h3>
+            <p>LinkedIn.com ka page open hona chahiye, login state me.</p>
+        </div>
+
+        <div class="card">
+            <h3><span class="step-num">2</span>Edge me ye page open karo</h3>
+            <p>Address bar me ye type karo:</p>
+            <pre>javascript:void(fetch('http://127.0.0.1:5002/api/import-cookies',{method:'POST',headers:{'Content-Type':'text/plain'},body:document.cookie}).then(r=>r.json()).then(d=>alert(d.message)))</pre>
+            <button class="btn btn-copy" onclick="copyBookmarklet()">Copy</button>
+            <p class="warning">Note: Ye sirf non-httpOnly cookies bhejega. li_at aur JSESSIONID httpOnly hain - ye Method 2 se lena padega.</p>
+        </div>
+    </div>
+
+    <!-- METHOD 2: DevTools -->
+    <div id="method-safe" class="method-content">
+        <div class="card">
+            <h3><span class="step-num">1</span>Edge me LinkedIn kholo (already logged in)</h3>
+            <p>LinkedIn.com ka page open hona chahiye.</p>
+        </div>
+
+        <div class="card">
+            <h3><span class="step-num">2</span>DevTools kholo</h3>
+            <p>Press <code>F12</code> ya right-click > <strong>Inspect</strong> > <strong>Console</strong> tab pe jao.</p>
+        </div>
+
+        <div class="card">
+            <h3><span class="step-num">3</span>Ye code paste karo Console me</h3>
+            <p>Console me click karo, paste karo, Enter dabao:</p>
+            <pre id="extract-code">(async()=>{let r=await fetch('/feed/',{credentials:'include',redirect:'manual'});let c=document.cookie;let h='';r.headers.forEach((v,k)=>{if(k.toLowerCase()==='set-cookie')h+=v+'; '});let out=c+(h?'; '+h:'');try{await navigator.clipboard.writeText(out)}catch(e){};console.log('COPIES:',out.length,'chars');console.log(out);return out})()</pre>
+            <button class="btn btn-copy" onclick="copyExtractCode()">Copy Code</button>
+        </div>
+
+        <div class="card">
+            <h3><span class="step-num">4</span>Output copy karo aur paste karo</h3>
+            <p>Console me output dikhega. Usme se sab kuch (including "COPIES:" wala line) copy karo aur neeche paste karo.</p>
+            <p class="warning">IMPORTANT: <code>li_at</code> aur <code>JSESSIONID</code> cookies ko manually lena padega:</p>
+            <p>DevTools > <strong>Application</strong> tab (upar me) > <strong>Cookies</strong> > <code>https://www.linkedin.com</code> > <strong>li_at</strong> ki value copy karo aur <strong>JSESSIONID</strong> ki value copy karo.</p>
+            <textarea id="cookie-input" placeholder="Yahan paste karo...&#10;&#10;Format: name1=value1; name2=value2; ...&#10;&#10;Ya sirf li_at aur JSESSIONID bhi chalega:&#10;li_at=AQED...; JSESSIONID=&quot;ajax:12345&quot;"></textarea>
+            <br>
+            <button class="btn btn-success" onclick="submitCookies()">Submit & Validate</button>
+            <button class="btn btn-primary" onclick="testCurrentCookies()">Test Current Cookies</button>
+            <div id="result"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showMethod(which) {
+    document.querySelectorAll('.method-content').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.method-tab').forEach(e => e.classList.remove('active'));
+    document.getElementById('method-' + which).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function copyBookmarklet() {
+    navigator.clipboard.writeText("javascript:void(fetch('http://127.0.0.1:5002/api/import-cookies',{method:'POST',headers:{'Content-Type':'text/plain'},body:document.cookie}).then(r=>r.json()).then(d=>alert(d.message)))");
+    alert("Copied!");
+}
+
+function copyExtractCode() {
+    navigator.clipboard.writeText(document.getElementById('extract-code').textContent);
+    alert("Copied!");
+}
+
+function submitCookies() {
+    const raw = document.getElementById('cookie-input').value.trim();
+    if (!raw) {
+        showResult(false, "Cookies empty hain! Kuch paste karo.");
+        return;
+    }
+
+    // Parse cookies into simple string
+    let cookieStr = raw
+        .replace(/^.*COPIES:\s*\d+\s*chars\s*/m, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    // Also handle tab-separated output from console
+    if (cookieStr.includes('\t')) {
+        cookieStr = cookieStr.split('\t').filter(s => s.includes('=')).join('; ');
+    }
+
+    showResult(null, "Validating cookies...");
+
+    fetch('/api/import-cookies', {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: cookieStr
+    })
+    .then(r => r.json())
+    .then(data => showResult(data.ok, data.message))
+    .catch(e => showResult(false, 'Network error: ' + e));
+}
+
+function testCurrentCookies() {
+    showResult(null, "Testing...");
+    fetch('/test-cookies', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'cookies=' + encodeURIComponent(document.getElementById('cookie-input').value)
+    })
+    .then(r => r.json())
+    .then(data => showResult(data.ok, data.msg || data.message))
+    .catch(e => showResult(false, 'Error: ' + e));
+}
+
+function showResult(ok, msg) {
+    const el = document.getElementById('result');
+    el.textContent = msg;
+    el.className = ok === null ? '' : (ok ? 'ok' : 'fail');
+}
+</script>
+</body>
+</html>

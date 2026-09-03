@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="font-size:22px;margin-bottom:20px">Settings</h1>
+
+<div class="card">
+  <h2>LinkedIn Login (Auto)</h2>
+  <p style="font-size:13px;color:#666;margin-bottom:12px">
+    Enter your LinkedIn email and password. Session auto-refreshes — no cookie paste needed.
+  </p>
+  <form method="POST" action="/settings">
+    <input type="hidden" name="action" value="save_linkedin">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-g">
+        <label>LinkedIn Email</label>
+        <input type="email" name="li_email" value="{{ li_email }}" placeholder="your@email.com" required>
+      </div>
+      <div class="form-g">
+        <label>LinkedIn Password</label>
+        <input type="password" name="li_pass" value="" placeholder="{{ li_pass_masked or 'password' }}" required>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button type="submit" class="btn btn-p">Save Credentials</button>
+    </div>
+  </form>
+  <form method="POST" action="/settings" style="margin-top:8px">
+    <input type="hidden" name="action" value="test_linkedin">
+    <button type="submit" class="btn btn-g">Test Login</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>SMTP Email Settings</h2>
+  <form method="POST" action="/settings">
+    <input type="hidden" name="action" value="save_smtp">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-g">
+        <label>SMTP Host</label>
+        <input type="text" name="smtp_host" value="{{ smtp.SMTP_HOST or 'smtp.gmail.com' }}">
+      </div>
+      <div class="form-g">
+        <label>SMTP Port</label>
+        <input type="number" name="smtp_port" value="{{ smtp.SMTP_PORT or '587' }}">
+      </div>
+      <div class="form-g">
+        <label>Email (SMTP_USER)</label>
+        <input type="email" name="smtp_user" value="{{ smtp.SMTP_USER or '' }}" placeholder="you@gmail.com">
+      </div>
+      <div class="form-g">
+        <label>App Password (SMTP_PASS)</label>
+        <input type="password" name="smtp_pass" value="{{ smtp.SMTP_PASS or '' }}" placeholder="xxxx xxxx xxxx xxxx">
+      </div>
+      <div class="form-g">
+        <label>From Name</label>
+        <input type="text" name="from_name" value="{{ smtp.FROM_NAME or 'Surya' }}">
+      </div>
+      <div class="form-g">
+        <label>From Email</label>
+        <input type="email" name="from_email" value="{{ smtp.FROM_EMAIL or '' }}" placeholder="same as SMTP user for Gmail">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button type="submit" class="btn btn-p">Save SMTP</button>
+    </div>
+  </form>
+  <form method="POST" action="/settings" style="margin-top:8px">
+    <input type="hidden" name="action" value="test_smtp">
+    <button type="submit" class="btn btn-g">Test SMTP</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Search Keywords</h2>
+  <form method="POST" action="/settings">
+    <input type="hidden" name="action" value="save_keywords">
+    <div class="form-g">
+      <label>One keyword per line</label>
+      <textarea name="keywords" rows="10" style="font-family:monospace;font-size:13px">{{ keywords_text }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-p">Save Keywords</button>
+  </form>
+</div>
+{% endblock %}

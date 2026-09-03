@@ -1,0 +1,45 @@
+# Secrets — NEVER commit
+.env
+.env.*
+*.key
+*.pem
+!dist/.env
+
+# Cookies / sessions
+.linkedin_cookies/
+.linkedin_cookies*
+*.jr
+*.jrl
+
+# Data — leads, saves, caches
+data/
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+production-backup.db
+hotfrog_notified.json
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

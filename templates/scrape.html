@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="font-size:22px;margin-bottom:20px">Scrape LinkedIn</h1>
+
+<div class="card" style="border-left:4px solid #059669">
+  <h2>Auto-Login Active</h2>
+  <p style="font-size:13px;color:#555;margin-bottom:8px">
+    LinkedIn credentials configured in <a href="/settings">Settings</a>. Session auto-refreshes — no cookie paste needed.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Search Keywords</h2>
+  <form method="POST" action="/scrape">
+    <div class="form-g">
+      <label>Keywords (comma-separated, or use Quick Keywords below)</label>
+      <textarea name="keywords" rows="4" placeholder="need a website developer, looking for web developer">{{ keywords_text[:300] }}</textarea>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:end">
+      <div class="form-g" style="max-width:180px">
+        <label>Leads per keyword</label>
+        <input type="number" name="needed" value="10" min="1" max="100">
+      </div>
+      <div class="form-g" style="max-width:180px">
+        <label>Date range</label>
+        <select name="date_posted">
+          <option value="past-24h">Last 24 Hours</option>
+          <option value="past-week" selected>Last Week</option>
+          <option value="past-month">Last Month</option>
+        </select>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:13px">
+        <input type="checkbox" name="use_all_keywords"> Use 121 keywords from file (random 20)
+      </label>
+    </div>
+    <button type="submit" class="btn btn-p">&#x1F50D; Start Scraping</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Quick Keywords</h2>
+  <div class="tag-row" id="quickTags">
+    <span class="pill" onclick="addKw(this)">need a website developer</span>
+    <span class="pill" onclick="addKw(this)">looking for web developer</span>
+    <span class="pill" onclick="addKw(this)">need ecommerce site</span>
+    <span class="pill" onclick="addKw(this)">need shopify developer</span>
+    <span class="pill" onclick="addKw(this)">hiring frontend developer</span>
+    <span class="pill" onclick="addKw(this)">need someone to build my website</span>
+    <span class="pill" onclick="addKw(this)">need landing page designed</span>
+    <span class="pill" onclick="addKw(this)">need react developer</span>
+  </div>
+</div>
+
+{% if job.state == 'running' %}
+<div class="card" style="border-left:4px solid #0a66c2">
+  <h2>&#x23F3; Scraping...</h2>
+  <p style="font-size:13px;color:#555;margin-bottom:8px" id="statusMsg">{{ job.message }}</p>
+  <p style="font-size:12px;color:#888;margin:4px 0" id="progressMsg">{{ job.progress }}</p>
+  <p style="font-size:12px;color:#888">Found: <span id="foundCount">{{ job.found }}</span> | Saved: <span id="savedCount">{{ job.saved }}</span> | Rejected: <span id="rejectedCount">{{ job.rejected or 0 }}</span></p>
+</div>
+{% endif %}
+
+{% if job.state == 'done' %}
+<div class="card" style="border-left:4px solid #059669">
+  <h2>&#x2705; Done!</h2>
+  <p style="font-size:14px">{{ job.message }}</p>
+  {% if job.email_sources %}
+  <p style="font-size:12px;color:#666;margin-top:8px">Email sources:
+    {% for src, cnt in job.email_sources.items() %}
+      <span style="background:#e0f2fe;padding:2px 8px;border-radius:8px;margin:0 4px">{{ src }}: {{ cnt }}</span>
+    {% endfor %}
+  </p>
+  {% endif %}
+  <a href="/leads" class="btn btn-s" style="margin-top:12px">View Leads</a>
+</div>
+{% endif %}
+
+{% if job.state == 'error' %}
+<div class="card" style="border-left:4px solid #dc2626">
+  <h2>&#x274C; Error</h2>
+  <p style="font-size:14px;color:#991b1b">{{ job.message }}</p>
+</div>
+{% endif %}
+
+{% if job.leads %}
+<div class="card">
+  <h2>Latest Results</h2>
+  <table>
+    <tr><th>Name</th><th>Post</th><th>Profile</th></tr>
+    {% for lead in job.leads %}
+    <tr>
+      <td>{{ lead.name[:25] }}</td>
+      <td style="font-size:12px;max-width:300px">{{ lead.post_text[:80] if lead.post_text else '-' }}</td>
+      <td><a href="{{ lead.profile_url }}" target="_blank">View</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+<script>
+function addKw(el) {
+  el.classList.toggle('on');
+  const ta = document.querySelector('textarea[name="keywords"]');
+  const kw = el.textContent.trim();
+  const current = ta.value.split(',').map(s => s.trim()).filter(Boolean);
+  if (el.classList.contains('on')) {
+    current.push(kw);
+  } else {
+    const idx = current.indexOf(kw);
+    if (idx >= 0) current.splice(idx, 1);
+  }
+  ta.value = current.join(', ');
+}
+
+{% if job.state == 'running' %}
+const iv = setInterval(() => {
+  fetch('/api/scrape/status').then(r => r.json()).then(d => {
+    document.getElementById('statusMsg').textContent = d.message;
+    document.getElementById('foundCount').textContent = d.found || 0;
+    document.getElementById('savedCount').textContent = d.saved || 0;
+    var rej = document.getElementById('rejectedCount');
+    if (rej) rej.textContent = d.rejected || 0;
+    var pg = document.getElementById('progressMsg');
+    if (pg && d.progress) pg.textContent = d.progress;
+    if (d.state !== 'running') {
+      clearInterval(iv);
+      setTimeout(() => location.reload(), 500);
+    }
+  });
+}, 3000);
+{% endif %}
+</script>
+{% endblock %}

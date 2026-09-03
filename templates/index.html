@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="font-size:22px;margin-bottom:20px">Dashboard</h1>
+
+<div class="grid4">
+  <div class="stat"><div class="n">{{ stats.total }}</div><div class="l">Email Leads</div></div>
+  <div class="stat"><div class="n">{{ stats.no_email_count }}</div><div class="l">No Email</div></div>
+  <div class="stat"><div class="n">{{ stats.history_count }}</div><div class="l">All-Time Seen</div></div>
+  <div class="stat"><div class="n">{{ stats.keywords|length }}</div><div class="l">Keywords</div></div>
+</div>
+
+{% if stats.keywords %}
+<div class="card" style="margin-top:16px">
+  <h2><span class="icon">&#x1F50D;</span> By Keyword</h2>
+  <table>
+    <tr><th>Keyword</th><th style="width:80px">Count</th></tr>
+    {% for kw, count in stats.keywords|dictsort(by='value',reverse=true) %}
+    <tr><td><a href="/leads?keyword={{ kw }}">{{ kw }}</a></td><td>{{ count }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if job.state == 'running' %}
+<div class="card" style="border-left:4px solid #0a66c2">
+  <h2>&#x23F3; Scraping in progress...</h2>
+  <p style="font-size:13px;color:#666">{{ job.message }}</p>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:16px;border-left:4px solid #2e9e5b">
+  <h2><span class="icon">&#x1F680;</span> No-Login Active-Intent Engine</h2>
+  <div class="grid4" style="margin:10px 0">
+    <div class="stat"><div class="n">{{ daily.discovered or 0 }}</div><div class="l">Discovered (today)</div></div>
+    <div class="stat"><div class="n">{{ daily.qualified or 0 }}</div><div class="l">Qualified</div></div>
+    <div class="stat"><div class="n">{{ daily.email_found or 0 }}</div><div class="l">Emails Found</div></div>
+    <div class="stat"><div class="n">{{ daily.email_verified or 0 }}</div><div class="l">Emails Verified</div></div>
+    <div class="stat"><div class="n">{{ daily.final_saved or 0 }}</div><div class="l">Final Saved</div></div>
+    <div class="stat"><div class="n">{{ daily.rejected or 0 }}</div><div class="l">Rejected</div></div>
+    <div class="stat"><div class="n">${{ "%.4f"|format(daily.spend_today or 0) }}</div><div class="l">Apify Spend Today</div></div>
+    <div class="stat"><div class="n">50</div><div class="l">Daily Target</div></div>
+  </div>
+  <form method="POST" action="/engine" style="margin-top:6px">
+    <button type="submit" class="btn">Run Engine Cycle Now</button>
+  </form>
+  {% if engine_job.state == 'running' %}<p style="font-size:13px;color:#666;margin-top:8px">&#x23F3; {{ engine_job.message }}</p>{% endif %}
+  {% if engine_job.state == 'done' %}<p style="font-size:13px;color:#2e9e5b;margin-top:8px">&#x2705; {{ engine_job.message }}</p>{% endif %}
+  {% if engine_job.state == 'error' %}<p style="font-size:13px;color:#c0392b;margin-top:8px">&#x274C; {{ engine_job.message }}</p>{% endif %}
+  <p style="font-size:12px;color:#888;margin-top:8px">Runs the scheduler engine (discover → qualify → enrich → verify → dedup → save → Telegram) on demand. Strict $0.15/day Apify budget guard.</p>
+</div>
+
+<div class="card">
+  <h2>Quick Start</h2>
+  <ol style="padding-left:18px;line-height:2.2;font-size:14px">
+    <li><a href="/settings">Settings</a> — configure SMTP (email sending)</li>
+    <li><a href="/scrape">Scrape</a> — open Edge with LinkedIn, enter keywords, scrape</li>
+    <li><a href="/leads">Leads</a> — review, add emails manually, export CSV</li>
+    <li><a href="/send">Send</a> — compose cold email, send to leads</li>
+  </ol>
+  <p style="margin-top:12px;font-size:13px;color:#888">Scraper uses your real Edge browser session — no cookie injection needed.</p>
+</div>
+{% endblock %}
